@@ -496,6 +496,166 @@
     vertical-align: -0.1em;
   }
 
+  /* ── Subscript / Superscript / Underline ── */
+  .markdown-body sub {
+    font-size: 0.8em;
+    vertical-align: sub;
+  }
+
+  .markdown-body sup {
+    font-size: 0.8em;
+    vertical-align: super;
+  }
+
+  .markdown-body ins {
+    text-decoration: underline;
+    text-decoration-color: var(--text-muted);
+    text-underline-offset: 2px;
+  }
+
+  /* ── Footnotes ── */
+  .markdown-body .footnote-ref a {
+    color: var(--accent);
+    text-decoration: none;
+    font-weight: 600;
+    font-size: 0.85em;
+    padding: 0 2px;
+  }
+
+  .markdown-body .footnote-ref a:hover {
+    text-decoration: underline;
+  }
+
+  .markdown-body .footnotes {
+    margin-top: 2em;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+  }
+
+  .markdown-body .footnotes-sep {
+    margin-bottom: 1em;
+  }
+
+  .markdown-body .footnotes-list {
+    padding-left: 1.5em;
+  }
+
+  .markdown-body .footnote-item {
+    margin-bottom: 0.4em;
+  }
+
+  .markdown-body .footnote-item p {
+    margin-bottom: 0.2em;
+    display: inline;
+  }
+
+  .markdown-body .footnote-backref {
+    color: var(--accent);
+    text-decoration: none;
+    font-size: 0.9em;
+    margin-left: 4px;
+  }
+
+  .markdown-body .footnote-backref:hover {
+    text-decoration: underline;
+  }
+
+  /* ── Color Chips ── */
+  .markdown-body .color-chip {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    vertical-align: -1px;
+    margin-right: 5px;
+  }
+
+  /* ── GFM Alerts ── */
+  .markdown-body .markdown-alert {
+    padding: 12px 16px;
+    margin: 0 0 1em 0;
+    border-left: 4px solid;
+    border-radius: 0 6px 6px 0;
+  }
+
+  .markdown-body .markdown-alert p { margin-bottom: 0.4em; }
+  .markdown-body .markdown-alert p:last-child { margin-bottom: 0; }
+
+  .markdown-body .markdown-alert-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 6px;
+    line-height: 1;
+  }
+
+  .markdown-body .markdown-alert-title svg {
+    flex-shrink: 0;
+  }
+
+  /* NOTE */
+  .markdown-body .markdown-alert-note {
+    border-left-color: var(--accent);
+    background: rgba(88, 166, 255, 0.08);
+  }
+  [data-theme="light"] .markdown-body .markdown-alert-note {
+    background: rgba(9, 105, 218, 0.06);
+  }
+  .markdown-body .markdown-alert-note .markdown-alert-title {
+    color: var(--accent);
+  }
+
+  /* TIP */
+  .markdown-body .markdown-alert-tip {
+    border-left-color: var(--green);
+    background: rgba(63, 185, 80, 0.08);
+  }
+  [data-theme="light"] .markdown-body .markdown-alert-tip {
+    background: rgba(26, 127, 55, 0.06);
+  }
+  .markdown-body .markdown-alert-tip .markdown-alert-title {
+    color: var(--green);
+  }
+
+  /* IMPORTANT */
+  .markdown-body .markdown-alert-important {
+    border-left-color: var(--purple);
+    background: rgba(188, 140, 255, 0.08);
+  }
+  [data-theme="light"] .markdown-body .markdown-alert-important {
+    background: rgba(130, 80, 223, 0.06);
+  }
+  .markdown-body .markdown-alert-important .markdown-alert-title {
+    color: var(--purple);
+  }
+
+  /* WARNING */
+  .markdown-body .markdown-alert-warning {
+    border-left-color: var(--orange);
+    background: rgba(210, 153, 34, 0.08);
+  }
+  [data-theme="light"] .markdown-body .markdown-alert-warning {
+    background: rgba(154, 103, 0, 0.06);
+  }
+  .markdown-body .markdown-alert-warning .markdown-alert-title {
+    color: var(--orange);
+  }
+
+  /* CAUTION */
+  .markdown-body .markdown-alert-caution {
+    border-left-color: var(--red);
+    background: rgba(248, 81, 73, 0.08);
+  }
+  [data-theme="light"] .markdown-body .markdown-alert-caution {
+    background: rgba(209, 36, 47, 0.06);
+  }
+  .markdown-body .markdown-alert-caution .markdown-alert-title {
+    color: var(--red);
+  }
+
   /* ── Status Bar ── */
   .status-bar {
     display: flex;
@@ -917,7 +1077,28 @@ const emojiExtension = {
   }
 };
 
-marked.use({ extensions: [emojiExtension] });
+// ── Marked footnote extension ──────────────────
+const footnoteRefExtension = {
+  name: 'footnoteRef',
+  level: 'inline',
+  start(src) { return src.indexOf('[^'); },
+  tokenizer(src) {
+    const match = src.match(/^\[\^([^\]]+)\]/);
+    if (match) {
+      return {
+        type: 'footnoteRef',
+        raw: match[0],
+        id: match[1]
+      };
+    }
+  },
+  renderer(token) {
+    const id = token.id;
+    return `<sup class="footnote-ref"><a href="#fn-${id}" id="fnref-${id}">[${id}]</a></sup>`;
+  }
+};
+
+marked.use({ extensions: [emojiExtension, footnoteRefExtension] });
 
 // ── Marked config ──────────────────────────────
 marked.setOptions({
@@ -937,26 +1118,39 @@ const sample = `# GitHub Flavored Markdown
 
 Welcome to the **GFM Preview** editor. Start typing on the left to see your markdown rendered in real-time.
 
-## Features
+## Headings
 
-### Text Formatting
+# H1 Heading
+## H2 Heading
+### H3 Heading
+#### H4 Heading
+##### H5 Heading
+###### H6 Heading
 
-You can write **bold**, *italic*, ~~strikethrough~~, and \`inline code\`. You can also combine **_bold and italic_** together.
+## Styling Text
 
-### Links & Images
+| Style | Syntax | Result |
+|-------|--------|--------|
+| Bold | \`**text**\` | **bold text** |
+| Italic | \`*text*\` | *italic text* |
+| Strikethrough | \`~~text~~\` | ~~mistaken text~~ |
+| Bold + Italic | \`***text***\` | ***all bold and italic*** |
+| Subscript | \`<sub>text</sub>\` | H<sub>2</sub>O |
+| Superscript | \`<sup>text</sup>\` | E=mc<sup>2</sup> |
+| Underline | \`<ins>text</ins>\` | <ins>underlined</ins> |
 
-[Visit GitHub](https://github.com) for more information.
-
-### Blockquotes
+## Quoting Text
 
 > "The best way to predict the future is to invent it."
 > — Alan Kay
 
-### Code Blocks
+## Quoting Code
+
+Use \`git status\` to list all new or modified files.
 
 \`\`\`javascript
 function greet(name) {
-  const message = \`Hello, \${name}!\`;
+  const message = "Hello, " + name + "!";
   console.log(message);
   return message;
 }
@@ -974,66 +1168,244 @@ def fibonacci(n):
 print(list(fibonacci(10)))
 \`\`\`
 
-### Tables
+## Supported Color Models
 
-| Feature       | Status  | Notes              |
-|---------------|---------|---------------------|
-| GFM Parsing   | ✅ Done | Full support        |
-| Syntax HL     | ✅ Done | Via highlight.js    |
-| Task Lists    | ✅ Done | Interactive checks  |
-| Tables        | ✅ Done | Aligned columns     |
-| Live Preview  | ✅ Done | Real-time rendering |
+The background color is \`#ffffff\` for light mode and \`#0d1117\` for dark mode.
 
-### Task Lists
+Here are some colors: \`#0969DA\` \`#3fb950\` \`#f85149\` \`#bc8cff\` \`#d29922\`
+
+RGB also works: \`rgb(9, 105, 218)\` and HSL: \`hsl(212, 92%, 45%)\`
+
+## Links
+
+This editor was built using [GitHub Flavored Markdown](https://github.github.com/gfm/) spec.
+
+Bare URLs are autolinked: https://github.com
+
+## Images
+
+![Octocat](https://github.githubassets.com/images/icons/emoji/octocat.png)
+
+## Lists
+
+### Ordered
+
+1. First item
+2. Second item
+3. Third item
+
+### Unordered
+
+- Item one
+- Item two
+  - Nested item
+  - Another nested item
+    - Deeply nested
+- Item three
+
+## Task Lists
 
 - [x] Set up the editor
 - [x] Add GFM parsing
 - [x] Syntax highlighting
 - [x] Dark/light theme toggle
 - [x] Emoji shortcode support :tada:
+- [x] Footnotes
+- [x] Color chip preview
+- [x] Subscript & superscript
+- [x] Alerts
 - [ ] Add export options
 
-### Emoji Support :sparkles:
+## Tables
 
-GitHub-style emoji shortcodes are fully supported! Just type \`:emoji_name:\` and it will render as an emoji.
+| Feature | Status | Notes |
+|---------|--------|-------|
+| Headings | ✅ Done | H1–H6 |
+| Text Styling | ✅ Done | Bold, italic, strike, sub, sup, ins |
+| Code Blocks | ✅ Done | Syntax highlighted |
+| Color Models | ✅ Done | HEX, RGB, HSL chips |
+| Tables | ✅ Done | Aligned columns |
+| Task Lists | ✅ Done | Interactive checks |
+| Footnotes | ✅ Done | Clickable refs |
+| Emojis | ✅ Done | 400+ shortcodes |
+| Alerts | ✅ Done | 5 types |
 
-| Shortcode | Emoji | Category |
-|-----------|-------|----------|
-| \`:smile:\` | :smile: | Faces |
-| \`:heart:\` | :heart: | Symbols |
-| \`:fire:\` | :fire: | Nature |
-| \`:rocket:\` | :rocket: | Travel |
-| \`:tada:\` | :tada: | Celebration |
-| \`:thumbsup:\` | :thumbsup: | Gestures |
-| \`:star:\` | :star: | Symbols |
-| \`:coffee:\` | :coffee: | Food |
-| \`:bug:\` | :bug: | Animals |
-| \`:100:\` | :100: | Symbols |
+## Emoji Support :sparkles:
 
-:bulb: **Pro tip:** You can use emojis anywhere — in headings, lists, blockquotes, and even table cells!
+Type \`:emoji_name:\` — e.g. :rocket: :fire: :heart: :star: :100: :thumbsup: :eyes: :thinking:
 
-### Lists
+## Footnotes
 
-1. First ordered item
-2. Second ordered item
-   - Nested unordered
-   - Another nested item
-3. Third ordered item
+This is a simple footnote[^1], and here's a longer one[^bignote].
+
+[^1]: This is the first footnote.
+[^bignote]: Here's one with more detail and explanation.
+
+## Alerts
+
+> [!NOTE]
+> Useful information that users should know, even when skimming content.
+
+> [!TIP]
+> Helpful advice for doing things better or more easily.
+
+> [!IMPORTANT]
+> Key information users need to know to achieve their goal.
+
+> [!WARNING]
+> Urgent info that needs immediate user attention to avoid problems.
+
+> [!CAUTION]
+> Advises about risks or negative outcomes of certain actions.
+
+## Hiding Content with Comments
+
+<!-- This is an HTML comment and won't appear in the preview -->
+The line above contains a hidden HTML comment.
+
+## Ignoring Markdown Formatting
+
+Escape with backslash: \\*not italic\\* and \\*\\*not bold\\*\\*
 
 ---
 
-### Horizontal Rules & Emphasis
+## Line Breaks
 
-Use \`---\` for horizontal rules. Combine *emphasis* in creative ways.
+This line has two trailing spaces  
+so it breaks here.
 
-> :sparkles: **Tip:** Toggle dark/light mode with the switch in the toolbar! Use \`:emoji_name:\` for GitHub-style emoji shortcodes.
+This line uses a backslash\\
+to create a line break.
+
+> :sparkles: **Pro tip:** This editor supports the full GitHub Basic Writing and Formatting Syntax!
 `;
 
 editor.value = sample;
 
+// ── GFM Alerts SVG icons ───────────────────────
+const alertIcons = {
+  note: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8Zm8-6.5a6.5 6.5 0 1 0 0 13 6.5 6.5 0 0 0 0-13ZM6.5 7.75A.75.75 0 0 1 7.25 7h1a.75.75 0 0 1 .75.75v2.75h.25a.75.75 0 0 1 0 1.5h-2a.75.75 0 0 1 0-1.5h.25v-2h-.25a.75.75 0 0 1-.75-.75ZM8 6a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>',
+  tip: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M8 1.5c-2.363 0-4 1.69-4 3.75 0 .984.424 1.625.984 2.304l.214.253c.223.264.47.556.673.848.284.411.537.896.621 1.49a.75.75 0 0 1-1.484.211c-.04-.282-.163-.547-.37-.847a8.456 8.456 0 0 0-.542-.68c-.084-.1-.173-.205-.268-.32C3.201 7.75 2.5 6.766 2.5 5.25 2.5 2.31 4.863 0 8 0s5.5 2.31 5.5 5.25c0 1.516-.701 2.5-1.328 3.259-.095.115-.184.22-.268.319-.207.245-.383.453-.541.681-.208.3-.33.565-.37.847a.751.751 0 0 1-1.485-.212c.084-.593.337-1.078.621-1.489.203-.292.45-.584.673-.848.075-.088.147-.173.213-.253.561-.679.985-1.32.985-2.304 0-2.06-1.637-3.75-4-3.75ZM5.75 12h4.5a.75.75 0 0 1 0 1.5h-4.5a.75.75 0 0 1 0-1.5ZM6 15.25a.75.75 0 0 1 .75-.75h2.5a.75.75 0 0 1 0 1.5h-2.5a.75.75 0 0 1-.75-.75Z"/></svg>',
+  important: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M0 1.75C0 .784.784 0 1.75 0h12.5C15.216 0 16 .784 16 1.75v9.5A1.75 1.75 0 0 1 14.25 13H8.06l-2.573 2.573A1.458 1.458 0 0 1 3 14.543V13H1.75A1.75 1.75 0 0 1 0 11.25Zm1.75-.25a.25.25 0 0 0-.25.25v9.5c0 .138.112.25.25.25h2a.75.75 0 0 1 .75.75v2.19l2.72-2.72a.749.749 0 0 1 .53-.22h6.5a.25.25 0 0 0 .25-.25v-9.5a.25.25 0 0 0-.25-.25Zm7 2.25v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 9a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>',
+  warning: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M6.457 1.047c.659-1.234 2.427-1.234 3.086 0l6.082 11.378A1.75 1.75 0 0 1 14.082 15H1.918a1.75 1.75 0 0 1-1.543-2.575Zm1.763.707a.25.25 0 0 0-.44 0L1.698 13.132a.25.25 0 0 0 .22.368h12.164a.25.25 0 0 0 .22-.368Zm.53 3.996v2.5a.75.75 0 0 1-1.5 0v-2.5a.75.75 0 0 1 1.5 0ZM9 11a1 1 0 1 1-2 0 1 1 0 0 1 2 0Z"/></svg>',
+  caution: '<svg width="16" height="16" viewBox="0 0 16 16" fill="currentColor"><path d="M4.47.22A.749.749 0 0 1 5 0h6c.199 0 .389.079.53.22l4.25 4.25c.141.14.22.331.22.53v6a.749.749 0 0 1-.22.53l-4.25 4.25A.749.749 0 0 1 11 16H5a.749.749 0 0 1-.53-.22L.22 11.53A.749.749 0 0 1 0 11V5c0-.199.079-.389.22-.53Zm.84 1.28L1.5 5.31v5.38l3.81 3.81h5.38l3.81-3.81V5.31L10.69 1.5ZM8 4a.75.75 0 0 1 .75.75v3.5a.75.75 0 0 1-1.5 0v-3.5A.75.75 0 0 1 8 4Zm0 8a1 1 0 1 1 0-2 1 1 0 0 1 0 2Z"/></svg>'
+};
+
+const alertLabels = {
+  note: 'Note',
+  tip: 'Tip',
+  important: 'Important',
+  warning: 'Warning',
+  caution: 'Caution'
+};
+
+function processAlerts(html) {
+  // Match blockquotes whose first line contains [!NOTE], [!TIP], etc.
+  const alertRegex = /<blockquote>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*<br\s*\/?>\s*/gi;
+  
+  // Also handle when the alert tag is on its own <p> line
+  const alertRegex2 = /<blockquote>\s*<p>\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*<\/p>/gi;
+
+  html = html.replace(alertRegex, (match, type) => {
+    const t = type.toLowerCase();
+    return `<div class="markdown-alert markdown-alert-${t}"><p class="markdown-alert-title">${alertIcons[t]} ${alertLabels[t]}</p><p>`;
+  });
+
+  html = html.replace(alertRegex2, (match, type) => {
+    const t = type.toLowerCase();
+    return `<div class="markdown-alert markdown-alert-${t}"><p class="markdown-alert-title">${alertIcons[t]} ${alertLabels[t]}</p>`;
+  });
+
+  // Close the div where blockquote was closed
+  // We need to match the corresponding </blockquote> for alerts we converted
+  // Simple approach: replace </blockquote> that follows an alert div
+  const parts = html.split(/(<div class="markdown-alert[^"]*">)/);
+  let result = '';
+  let insideAlert = 0;
+
+  for (let i = 0; i < parts.length; i++) {
+    const part = parts[i];
+    if (part.match(/^<div class="markdown-alert/)) {
+      insideAlert++;
+      result += part;
+    } else if (insideAlert > 0) {
+      // Replace the first </blockquote> with </div>
+      const idx = part.indexOf('</blockquote>');
+      if (idx !== -1) {
+        result += part.substring(0, idx) + '</div>' + part.substring(idx + 13);
+        insideAlert--;
+      } else {
+        result += part;
+      }
+    } else {
+      result += part;
+    }
+  }
+
+  return result;
+}
+
+// ── Footnote block processing ──────────────────
+function processFootnotes(md) {
+  // Extract footnote definitions: [^id]: content
+  const footnotes = {};
+  const cleaned = md.replace(/^\[\^([^\]]+)\]:\s*(.+)$/gm, (match, id, content) => {
+    footnotes[id] = content;
+    return ''; // remove definition from body
+  });
+  return { cleaned, footnotes };
+}
+
+function renderFootnoteSection(footnotes) {
+  const ids = Object.keys(footnotes);
+  if (ids.length === 0) return '';
+  let html = '<section class="footnotes"><hr class="footnotes-sep"><ol class="footnotes-list">';
+  for (const id of ids) {
+    html += `<li id="fn-${id}" class="footnote-item"><p>${marked.parseInline(footnotes[id])} <a href="#fnref-${id}" class="footnote-backref">↩</a></p></li>`;
+  }
+  html += '</ol></section>';
+  return html;
+}
+
+// ── Color chip processing ──────────────────────
+function processColorChips(html) {
+  // Match inline <code> tags containing color values
+  // HEX: #RGB, #RRGGBB, #RRGGBBAA
+  html = html.replace(/<code>(#(?:[0-9a-fA-F]{3,4}|[0-9a-fA-F]{6}|[0-9a-fA-F]{8}))<\/code>/g, (match, color) => {
+    return `<code><span class="color-chip" style="background:${color}"></span>${color}</code>`;
+  });
+
+  // RGB: rgb(r, g, b) or rgba(r, g, b, a)
+  html = html.replace(/<code>(rgba?\(\s*\d{1,3}\s*,\s*\d{1,3}\s*,\s*\d{1,3}\s*(?:,\s*[\d.]+\s*)?\))<\/code>/g, (match, color) => {
+    return `<code><span class="color-chip" style="background:${color}"></span>${color}</code>`;
+  });
+
+  // HSL: hsl(h, s%, l%) or hsla(h, s%, l%, a)
+  html = html.replace(/<code>(hsla?\(\s*\d{1,3}\s*,\s*\d{1,3}%\s*,\s*\d{1,3}%\s*(?:,\s*[\d.]+\s*)?\))<\/code>/g, (match, color) => {
+    return `<code><span class="color-chip" style="background:${color}"></span>${color}</code>`;
+  });
+
+  return html;
+}
+
+// ── HTML comment removal ───────────────────────
+function removeHtmlComments(md) {
+  return md.replace(/<!--[\s\S]*?-->/g, '');
+}
+
 // ── Render & Stats ─────────────────────────────
 function render() {
-  preview.innerHTML = marked.parse(editor.value);
+  // Pre-process: extract footnotes, remove HTML comments
+  let md = editor.value;
+  md = removeHtmlComments(md);
+  const { cleaned, footnotes } = processFootnotes(md);
+
+  let html = marked.parse(cleaned);
+  html = processAlerts(html);
+  html = processColorChips(html);
+  html += renderFootnoteSection(footnotes);
+
+  preview.innerHTML = html;
   updateStats();
 }
 
