@@ -1,414 +1,862 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="dark">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Flavored Markdown Editor</title>
-    
-    <!-- GitHub Markdown CSS -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/github-markdown-css/5.5.1/github-markdown-light.min.css">
-    
-    <!-- Marked.js for parsing markdown -->
-    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-    
-    <!-- Marked Emoji extension -->
-    <script src="https://cdn.jsdelivr.net/npm/marked-emoji@1.4.1/lib/index.umd.min.js"></script>
-    
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Noto Sans', Helvetica, Arial, sans-serif;
-            background: #ffffff;
-            color: #24292f;
-            height: 100vh;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        /* Header */
-        header {
-            background: #f6f8fa;
-            padding: 1rem 1.5rem;
-            border-bottom: 1px solid #d0d7de;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-        
-        h1 {
-            font-size: 1.25rem;
-            font-weight: 600;
-            color: #24292f;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-        
-        .github-logo {
-            width: 32px;
-            height: 32px;
-        }
-        
-        /* Main container */
-        .container {
-            display: flex;
-            flex: 1;
-            overflow: hidden;
-        }
-        
-        /* Left panel - Editor */
-        .editor-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            border-right: 1px solid #d0d7de;
-            background: #ffffff;
-        }
-        
-        .panel-header {
-            background: #f6f8fa;
-            padding: 0.75rem 1rem;
-            border-bottom: 1px solid #d0d7de;
-            font-weight: 600;
-            font-size: 0.875rem;
-            color: #57606a;
-        }
-        
-        #markdown-editor {
-            flex: 1;
-            background: #ffffff;
-            color: #24292f;
-            border: none;
-            padding: 1.5rem;
-            font-family: ui-monospace, SFMono-Regular, 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
-            font-size: 14px;
-            line-height: 1.6;
-            resize: none;
-            outline: none;
-            overflow-y: auto;
-        }
-        
-        #markdown-editor::placeholder {
-            color: #6e7781;
-        }
-        
-        /* Right panel - Preview */
-        .preview-panel {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            background: #ffffff;
-        }
-        
-        .preview-content {
-            flex: 1;
-            overflow-y: auto;
-            padding: 1.5rem;
-        }
-        
-        /* GitHub markdown styling adjustments */
-        .markdown-body {
-            box-sizing: border-box;
-            min-width: 200px;
-            max-width: 100%;
-            padding: 0;
-        }
-        
-        /* Scrollbar styling */
-        ::-webkit-scrollbar {
-            width: 12px;
-            height: 12px;
-        }
-        
-        ::-webkit-scrollbar-track {
-            background: #ffffff;
-        }
-        
-        ::-webkit-scrollbar-thumb {
-            background: #d0d7de;
-            border-radius: 6px;
-        }
-        
-        ::-webkit-scrollbar-thumb:hover {
-            background: #afb8c1;
-        }
-        
-        /* Buttons */
-        .header-actions {
-            display: flex;
-            gap: 0.5rem;
-        }
-        
-        button {
-            background: #f6f8fa;
-            border: 1px solid #d0d7de;
-            color: #24292f;
-            padding: 0.5rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-        
-        button:hover {
-            background: #ffffff;
-            border-color: #1f2328;
-        }
-        
-        button:active {
-            background: #ebecf0;
-        }
-        
-        /* Responsive */
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-            
-            .editor-panel {
-                border-right: none;
-                border-bottom: 1px solid #d0d7de;
-            }
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GFM Preview</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/marked/12.0.1/marked.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<link id="hljs-dark" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github-dark.min.css">
+<link id="hljs-light" rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/github.min.css" disabled>
+<style>
+  /* ══════════════════════════════════════════════
+     DARK THEME (default)
+     ══════════════════════════════════════════════ */
+  [data-theme="dark"] {
+    --bg-deep: #0d1117;
+    --bg-editor: #0d1117;
+    --bg-preview: #161b22;
+    --bg-surface: #21262d;
+    --border: #30363d;
+    --text-primary: #e6edf3;
+    --text-secondary: #8b949e;
+    --text-muted: #484f58;
+    --accent: #58a6ff;
+    --accent-glow: rgba(88, 166, 255, 0.15);
+    --green: #3fb950;
+    --orange: #d29922;
+    --red: #f85149;
+    --purple: #bc8cff;
+    --strong-color: #ffffff;
+    --code-bg: #21262d;
+    --pre-bg: #0d1117;
+    --blockquote-bg: rgba(88, 166, 255, 0.08);
+    --checkbox-bg: #58a6ff;
+    --table-stripe: rgba(255, 255, 255, 0.02);
+    --selection: rgba(88, 166, 255, 0.25);
+    --toggle-bg: #30363d;
+    --toggle-knob: #e6edf3;
+    --shadow-soft: rgba(0, 0, 0, 0.3);
+  }
+
+  /* ══════════════════════════════════════════════
+     LIGHT THEME
+     ══════════════════════════════════════════════ */
+  [data-theme="light"] {
+    --bg-deep: #f6f8fa;
+    --bg-editor: #ffffff;
+    --bg-preview: #ffffff;
+    --bg-surface: #f0f2f5;
+    --border: #d1d9e0;
+    --text-primary: #1f2328;
+    --text-secondary: #59636e;
+    --text-muted: #8b949e;
+    --accent: #0969da;
+    --accent-glow: rgba(9, 105, 218, 0.1);
+    --green: #1a7f37;
+    --orange: #9a6700;
+    --red: #d1242f;
+    --purple: #8250df;
+    --strong-color: #1f2328;
+    --code-bg: #eff1f3;
+    --pre-bg: #f6f8fa;
+    --blockquote-bg: rgba(9, 105, 218, 0.06);
+    --checkbox-bg: #0969da;
+    --table-stripe: rgba(0, 0, 0, 0.02);
+    --selection: rgba(9, 105, 218, 0.2);
+    --toggle-bg: #d1d9e0;
+    --toggle-knob: #ffffff;
+    --shadow-soft: rgba(0, 0, 0, 0.08);
+  }
+
+  /* ══════════════════════════════════════════════
+     SMOOTH TRANSITIONS ON THEME SWITCH
+     ══════════════════════════════════════════════ */
+  html.theme-transitioning,
+  html.theme-transitioning *,
+  html.theme-transitioning *::before,
+  html.theme-transitioning *::after {
+    transition: background-color 0.35s ease, color 0.35s ease, border-color 0.35s ease, box-shadow 0.35s ease !important;
+  }
+
+  /* ══════════════════════════════════════════════
+     BASE
+     ══════════════════════════════════════════════ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    height: 100%;
+    background: var(--bg-deep);
+    color: var(--text-primary);
+    font-family: 'DM Sans', sans-serif;
+    overflow: hidden;
+  }
+
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    animation: fadeIn 0.4s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* ── Toolbar ── */
+  .toolbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 48px;
+    padding: 0 20px;
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .toolbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.3px;
+  }
+
+  .logo svg { opacity: 0.9; }
+
+  .logo span {
+    background: linear-gradient(135deg, var(--accent), var(--purple));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+  }
+
+  .badge {
+    font-size: 10px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 10px;
+    background: var(--accent-glow);
+    color: var(--accent);
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+  }
+
+  .toolbar-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+
+  .toolbar-btn {
+    background: var(--bg-surface);
+    border: 1px solid var(--border);
+    color: var(--text-secondary);
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+  }
+
+  .toolbar-btn:hover {
+    background: var(--border);
+    color: var(--text-primary);
+  }
+
+  /* ── Theme Toggle Switch ── */
+  .theme-toggle-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-left: 6px;
+    padding-left: 12px;
+    border-left: 1px solid var(--border);
+  }
+
+  .theme-icon {
+    display: flex;
+    align-items: center;
+    color: var(--text-muted);
+    transition: color 0.3s, transform 0.3s;
+  }
+
+  .theme-icon.active {
+    color: var(--accent);
+    transform: scale(1.15);
+  }
+
+  .theme-toggle {
+    position: relative;
+    width: 40px;
+    height: 22px;
+    cursor: pointer;
+  }
+
+  .theme-toggle input { display: none; }
+
+  .toggle-track {
+    position: absolute;
+    inset: 0;
+    background: var(--toggle-bg);
+    border-radius: 11px;
+    border: 1px solid var(--border);
+    transition: background 0.3s, border-color 0.3s;
+  }
+
+  .toggle-knob {
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 16px;
+    height: 16px;
+    background: var(--toggle-knob);
+    border-radius: 50%;
+    box-shadow: 0 1px 3px var(--shadow-soft);
+    transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1), background 0.3s;
+  }
+
+  .theme-toggle input:checked ~ .toggle-knob {
+    transform: translateX(18px);
+  }
+
+  /* ── Panels ── */
+  .panels {
+    display: flex;
+    flex: 1;
+    min-height: 0;
+  }
+
+  .panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    font-size: 12px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    color: var(--text-muted);
+    background: var(--bg-deep);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .panel-header .dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+  }
+
+  .editor-dot { background: var(--green); box-shadow: 0 0 6px color-mix(in srgb, var(--green) 40%, transparent); }
+  .preview-dot { background: var(--accent); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 40%, transparent); }
+
+  .editor-wrap {
+    flex: 1;
+    position: relative;
+    overflow: hidden;
+    background: var(--bg-editor);
+  }
+
+  textarea {
+    width: 100%;
+    height: 100%;
+    background: transparent;
+    color: var(--text-primary);
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13.5px;
+    line-height: 1.7;
+    border: none;
+    outline: none;
+    resize: none;
+    padding: 20px 24px;
+    tab-size: 2;
+    caret-color: var(--accent);
+  }
+
+  textarea::selection { background: var(--selection); }
+  textarea::placeholder { color: var(--text-muted); }
+  textarea.no-wrap { white-space: pre; overflow-x: auto; }
+  textarea.wrap { white-space: pre-wrap; word-wrap: break-word; }
+
+  /* ── Divider ── */
+  .divider {
+    width: 1px;
+    background: var(--border);
+    position: relative;
+    cursor: col-resize;
+    flex-shrink: 0;
+    z-index: 10;
+  }
+
+  .divider::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 3px;
+    height: 40px;
+    border-radius: 3px;
+    background: var(--text-muted);
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .divider:hover::before { opacity: 0.5; }
+  .divider:hover { background: var(--accent); }
+
+  /* ── Preview ── */
+  .preview-wrap {
+    flex: 1;
+    overflow-y: auto;
+    background: var(--bg-preview);
+    padding: 32px 40px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+
+  .preview-wrap::-webkit-scrollbar { width: 6px; }
+  .preview-wrap::-webkit-scrollbar-track { background: transparent; }
+  .preview-wrap::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
+
+  /* ══════════════════════════════════════════════
+     GFM MARKDOWN STYLES
+     ══════════════════════════════════════════════ */
+  .markdown-body {
+    max-width: 780px;
+    font-size: 15px;
+    line-height: 1.75;
+    color: var(--text-primary);
+  }
+
+  .markdown-body h1, .markdown-body h2, .markdown-body h3,
+  .markdown-body h4, .markdown-body h5, .markdown-body h6 {
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 700;
+    margin-top: 1.5em;
+    margin-bottom: 0.6em;
+    line-height: 1.3;
+    color: var(--text-primary);
+  }
+
+  .markdown-body h1 { font-size: 2em; padding-bottom: 0.3em; border-bottom: 1px solid var(--border); }
+  .markdown-body h2 { font-size: 1.5em; padding-bottom: 0.25em; border-bottom: 1px solid var(--border); }
+  .markdown-body h3 { font-size: 1.25em; }
+  .markdown-body h4 { font-size: 1em; }
+
+  .markdown-body p { margin-bottom: 1em; }
+
+  .markdown-body a {
+    color: var(--accent);
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.15s;
+  }
+
+  .markdown-body a:hover { border-bottom-color: var(--accent); }
+
+  .markdown-body strong { font-weight: 700; color: var(--strong-color); }
+  .markdown-body em { font-style: italic; }
+  .markdown-body del { color: var(--text-secondary); }
+
+  .markdown-body code {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.88em;
+    background: var(--code-bg);
+    padding: 0.2em 0.45em;
+    border-radius: 5px;
+    border: 1px solid var(--border);
+    color: var(--orange);
+  }
+
+  .markdown-body pre {
+    background: var(--pre-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 16px 20px;
+    overflow-x: auto;
+    margin-bottom: 1em;
+  }
+
+  .markdown-body pre code {
+    background: none;
+    border: none;
+    padding: 0;
+    font-size: 13px;
+    color: var(--text-primary);
+  }
+
+  .markdown-body blockquote {
+    border-left: 3px solid var(--accent);
+    padding: 2px 16px;
+    margin: 0 0 1em 0;
+    color: var(--text-secondary);
+    background: var(--blockquote-bg);
+    border-radius: 0 6px 6px 0;
+  }
+
+  .markdown-body blockquote p { margin-bottom: 0.4em; }
+
+  .markdown-body ul, .markdown-body ol {
+    padding-left: 2em;
+    margin-bottom: 1em;
+  }
+
+  .markdown-body li { margin-bottom: 0.35em; }
+  .markdown-body li > ul, .markdown-body li > ol { margin-bottom: 0; }
+
+  .markdown-body li input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 15px;
+    height: 15px;
+    border: 2px solid var(--border);
+    border-radius: 3px;
+    vertical-align: middle;
+    position: relative;
+    top: -1px;
+    margin-right: 6px;
+    cursor: default;
+  }
+
+  .markdown-body li input[type="checkbox"]:checked {
+    background: var(--checkbox-bg);
+    border-color: var(--checkbox-bg);
+  }
+
+  .markdown-body li input[type="checkbox"]:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    font-size: 11px;
+    color: #fff;
+    font-weight: bold;
+  }
+
+  .markdown-body table {
+    border-collapse: collapse;
+    width: 100%;
+    margin-bottom: 1em;
+    font-size: 14px;
+  }
+
+  .markdown-body th, .markdown-body td {
+    border: 1px solid var(--border);
+    padding: 8px 14px;
+    text-align: left;
+  }
+
+  .markdown-body th {
+    background: var(--bg-surface);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .markdown-body tr:nth-child(2n) { background: var(--table-stripe); }
+
+  .markdown-body hr {
+    border: none;
+    height: 1px;
+    background: var(--border);
+    margin: 2em 0;
+  }
+
+  .markdown-body img {
+    max-width: 100%;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+
+  /* ── Status Bar ── */
+  .status-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 28px;
+    padding: 0 16px;
+    background: var(--bg-deep);
+    border-top: 1px solid var(--border);
+    font-size: 11px;
+    color: var(--text-muted);
+    flex-shrink: 0;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .status-bar .left, .status-bar .right {
+    display: flex;
+    gap: 16px;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 700px) {
+    .panels { flex-direction: column; }
+    .divider { width: 100%; height: 1px; cursor: row-resize; }
+    .divider::before { width: 40px; height: 3px; }
+    .preview-wrap { padding: 20px; }
+    .theme-toggle-wrap { margin-left: 4px; padding-left: 8px; }
+  }
+</style>
 </head>
 <body>
-    <header>
-        <h1>
-            <svg class="github-logo" viewBox="0 0 16 16" fill="currentColor">
-                <path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"></path>
-            </svg>
-            GitHub Flavored Markdown Editor
-        </h1>
-        <div class="header-actions">
-            <button id="copy-btn">📋 Copy Markdown</button>
-            <button id="clear-btn">🗑️ Clear</button>
-        </div>
-    </header>
-    
-    <div class="container">
-        <!-- Left Panel: Editor -->
-        <div class="editor-panel">
-            <div class="panel-header">MARKDOWN</div>
-            <textarea id="markdown-editor" placeholder="Type your GitHub Flavored Markdown here..."></textarea>
-        </div>
-        
-        <!-- Right Panel: Preview -->
-        <div class="preview-panel">
-            <div class="panel-header">PREVIEW</div>
-            <div class="preview-content">
-                <article class="markdown-body" id="preview-output"></article>
-            </div>
-        </div>
+<div class="app">
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="toolbar-left">
+      <div class="logo">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--accent)">
+          <path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/>
+          <polyline points="14 2 14 8 20 8"/>
+          <line x1="16" y1="13" x2="8" y2="13"/>
+          <line x1="16" y1="17" x2="8" y2="17"/>
+          <line x1="10" y1="9" x2="8" y2="9"/>
+        </svg>
+        <span>GFM Preview</span>
+      </div>
+      <div class="badge">Live</div>
     </div>
-    
-    <script>
-        // Configure marked for GitHub Flavored Markdown
-        marked.use({
-            gfm: true,
-            breaks: true,
-            headerIds: true,
-            mangle: false
-        });
-        
-        // Add emoji support
-        marked.use(markedEmoji.markedEmoji({
-            emojis: markedEmoji.emojis,
-            unicode: true
-        }));
-        
-        // Default sample content
-        const defaultMarkdown = `# Welcome to GitHub Flavored Markdown Editor
+    <div class="toolbar-actions">
+      <button class="toolbar-btn" onclick="toggleWrap()" title="Toggle word wrap">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M3 12h15a3 3 0 1 1 0 6h-4"/><polyline points="13 16 11 18 13 20"/><path d="M3 18h7"/></svg>
+        Wrap
+      </button>
+      <button class="toolbar-btn" onclick="clearEditor()" title="Clear editor">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+        Clear
+      </button>
+      <button class="toolbar-btn" onclick="copyMarkdown()" title="Copy markdown">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+        Copy
+      </button>
 
-### Getting Started
+      <!-- Theme Toggle -->
+      <div class="theme-toggle-wrap">
+        <div class="theme-icon" id="sunIcon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="5"/>
+            <line x1="12" y1="1" x2="12" y2="3"/>
+            <line x1="12" y1="21" x2="12" y2="23"/>
+            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+            <line x1="1" y1="12" x2="3" y2="12"/>
+            <line x1="21" y1="12" x2="23" y2="12"/>
+            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+          </svg>
+        </div>
+        <label class="theme-toggle" title="Toggle light/dark mode">
+          <input type="checkbox" id="themeSwitch" checked>
+          <div class="toggle-track"></div>
+          <div class="toggle-knob"></div>
+        </label>
+        <div class="theme-icon" id="moonIcon">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+  </div>
 
-> "Documentation is a love letter that you write to your future self." - Damian Conway
+  <!-- Panels -->
+  <div class="panels">
+    <div class="panel" id="editorPanel">
+      <div class="panel-header">
+        <div class="dot editor-dot"></div>
+        Markdown
+      </div>
+      <div class="editor-wrap">
+        <textarea id="editor" class="wrap" spellcheck="false" placeholder="Start writing GFM markdown…"></textarea>
+      </div>
+    </div>
 
-## Installation
+    <div class="divider" id="divider"></div>
 
-\`\`\`bash
-npm install my-awesome-project
-cd my-awesome-project
-npm start
-\`\`\`
+    <div class="panel" id="previewPanel">
+      <div class="panel-header">
+        <div class="dot preview-dot"></div>
+        Preview
+      </div>
+      <div class="preview-wrap">
+        <div class="markdown-body" id="preview"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Status Bar -->
+  <div class="status-bar">
+    <div class="left">
+      <span id="charCount">0 chars</span>
+      <span id="wordCount">0 words</span>
+      <span id="lineCount">1 line</span>
+    </div>
+    <div class="right">
+      <span>GFM</span>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const editor = document.getElementById('editor');
+const preview = document.getElementById('preview');
+const themeSwitch = document.getElementById('themeSwitch');
+const sunIcon = document.getElementById('sunIcon');
+const moonIcon = document.getElementById('moonIcon');
+const hljsDark = document.getElementById('hljs-dark');
+const hljsLight = document.getElementById('hljs-light');
+
+// ── Theme ──────────────────────────────────────
+function setTheme(theme, animate = true) {
+  if (animate) {
+    document.documentElement.classList.add('theme-transitioning');
+    setTimeout(() => document.documentElement.classList.remove('theme-transitioning'), 400);
+  }
+
+  document.documentElement.setAttribute('data-theme', theme);
+  themeSwitch.checked = (theme === 'dark');
+
+  if (theme === 'dark') {
+    hljsDark.disabled = false;
+    hljsLight.disabled = true;
+    sunIcon.classList.remove('active');
+    moonIcon.classList.add('active');
+  } else {
+    hljsDark.disabled = true;
+    hljsLight.disabled = false;
+    sunIcon.classList.add('active');
+    moonIcon.classList.remove('active');
+  }
+
+  localStorage.setItem('gfm-theme', theme);
+  render();
+}
+
+themeSwitch.addEventListener('change', () => {
+  setTheme(themeSwitch.checked ? 'dark' : 'light');
+});
+
+// Init from saved preference or system preference
+(function initTheme() {
+  const saved = localStorage.getItem('gfm-theme');
+  if (saved) {
+    setTheme(saved, false);
+  } else if (window.matchMedia && window.matchMedia('(prefers-color-scheme: light)').matches) {
+    setTheme('light', false);
+  } else {
+    setTheme('dark', false);
+  }
+})();
+
+window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', (e) => {
+  if (!localStorage.getItem('gfm-theme')) {
+    setTheme(e.matches ? 'dark' : 'light');
+  }
+});
+
+// ── Marked config ──────────────────────────────
+marked.setOptions({
+  gfm: true,
+  breaks: true,
+  highlight: function(code, lang) {
+    if (lang && hljs.getLanguage(lang)) {
+      try { return hljs.highlight(code, { language: lang }).value; } catch(e) {}
+    }
+    try { return hljs.highlightAuto(code).value; } catch(e) {}
+    return code;
+  }
+});
+
+// ── Sample markdown ────────────────────────────
+const sample = `# GitHub Flavored Markdown
+
+Welcome to the **GFM Preview** editor. Start typing on the left to see your markdown rendered in real-time.
 
 ## Features
 
-This editor supports all GitHub Flavored Markdown features:
+### Text Formatting
 
-1. **Headings** with auto-generated IDs
-2. **Code blocks** with syntax highlighting
-3. **Tables** with alignment
-4. **Task lists** with checkboxes
-5. **Emojis** and special characters
+You can write **bold**, *italic*, ~~strikethrough~~, and \`inline code\`. You can also combine **_bold and italic_** together.
 
-## Quick Example
+### Links & Images
 
-Here's some inline code: \`const greeting = "Hello, World!";\`
+[Visit GitHub](https://github.com) for more information.
 
-### JavaScript Function
+### Blockquotes
+
+> "The best way to predict the future is to invent it."
+> — Alan Kay
+
+### Code Blocks
 
 \`\`\`javascript
-function fibonacci(n) {
-  if (n <= 1) return n;
-  return fibonacci(n - 1) + fibonacci(n - 2);
+function greet(name) {
+  const message = \`Hello, \${name}!\`;
+  console.log(message);
+  return message;
 }
 
-console.log(fibonacci(10)); // Output: 55
+greet('World');
 \`\`\`
-
-### Python Example
 
 \`\`\`python
-def greet(name):
-    return f"Hello, {name}! 👋"
+def fibonacci(n):
+    a, b = 0, 1
+    for _ in range(n):
+        yield a
+        a, b = b, a + b
 
-print(greet("Developer"))
+print(list(fibonacci(10)))
 \`\`\`
 
-## Links and Images
+### Tables
 
-Check out the [GitHub Documentation](https://docs.github.com) for more information.
+| Feature       | Status  | Notes              |
+|---------------|---------|---------------------|
+| GFM Parsing   | ✅ Done | Full support        |
+| Syntax HL     | ✅ Done | Via highlight.js    |
+| Task Lists    | ✅ Done | Interactive checks  |
+| Tables        | ✅ Done | Aligned columns     |
+| Live Preview  | ✅ Done | Real-time rendering |
 
-![Sample Image](https://via.placeholder.com/600x200/238636/ffffff?text=GitHub+Markdown+Sample)
+### Task Lists
 
-## Task Lists
+- [x] Set up the editor
+- [x] Add GFM parsing
+- [x] Syntax highlighting
+- [x] Dark/light theme toggle
+- [ ] Add export options
 
-- [x] Learn Markdown basics
-- [x] Understand GFM extensions
-- [ ] Build something awesome
-- [ ] Share with the community
+### Lists
 
-## Emojis
-
-GitHub supports emoji shortcodes! 🎉
-
-- :rocket: = 🚀
-- :heart: = ❤️
-- :star: = ⭐
-- :tada: = 🎉
-- :sparkles: = ✨
-
-## Tables
-
-| Feature | Supported | Notes |
-|---------|:---------:|-------|
-| Headings | ✅ | H1 through H6 |
-| Code Blocks | ✅ | With syntax highlighting |
-| Tables | ✅ | With alignment |
-| Task Lists | ✅ | Interactive checkboxes |
-| Emojis | ✅ | :heart: syntax |
-| Strikethrough | ✅ | ~~like this~~ |
-
-## Text Formatting
-
-You can make text **bold**, *italic*, or ***both***.
-
-You can also ~~strike through~~ text.
-
-## Blockquotes
-
-> This is a simple blockquote.
-> 
-> It can span multiple lines.
-> 
-> > And even be nested!
-
-## Horizontal Rule
+1. First ordered item
+2. Second ordered item
+   - Nested unordered
+   - Another nested item
+3. Third ordered item
 
 ---
 
-## Lists
+### Horizontal Rules & Emphasis
 
-### Unordered List
+Use \`---\` for horizontal rules. Combine *emphasis* in creative ways.
 
-- First item
-- Second item
-  - Nested item
-  - Another nested item
-- Third item
-
-### Ordered List
-
-1. First step
-2. Second step
-   1. Sub-step A
-   2. Sub-step B
-3. Third step
-
-## Code and Syntax
-
-Inline code: \`git commit -m "Update README"\`
-
-Block code:
-
-\`\`\`
-git add .
-git commit -m "Initial commit"
-git push origin main
-\`\`\`
-
----
-
-**Happy Markdown writing!** ✨
+> **Tip:** Toggle dark/light mode with the switch in the toolbar! Your preference is saved automatically.
 `;
-        
-        const editor = document.getElementById('markdown-editor');
-        const preview = document.getElementById('preview-output');
-        const copyBtn = document.getElementById('copy-btn');
-        const clearBtn = document.getElementById('clear-btn');
-        
-        // Render markdown to preview
-        function renderMarkdown() {
-            const markdown = editor.value;
-            preview.innerHTML = marked.parse(markdown);
-        }
-        
-        // Initialize with default content
-        editor.value = defaultMarkdown;
-        renderMarkdown();
-        
-        // Listen for editor changes
-        editor.addEventListener('input', renderMarkdown);
-        
-        // Copy markdown to clipboard
-        copyBtn.addEventListener('click', async () => {
-            try {
-                await navigator.clipboard.writeText(editor.value);
-                copyBtn.textContent = '✅ Copied!';
-                setTimeout(() => {
-                    copyBtn.textContent = '📋 Copy Markdown';
-                }, 2000);
-            } catch (err) {
-                console.error('Failed to copy:', err);
-            }
-        });
-        
-        // Clear editor
-        clearBtn.addEventListener('click', () => {
-            if (confirm('Clear all content?')) {
-                editor.value = '';
-                renderMarkdown();
-            }
-        });
-        
-        // Keyboard shortcuts
-        editor.addEventListener('keydown', (e) => {
-            // Tab key for indentation
-            if (e.key === 'Tab') {
-                e.preventDefault();
-                const start = editor.selectionStart;
-                const end = editor.selectionEnd;
-                editor.value = editor.value.substring(0, start) + '  ' + editor.value.substring(end);
-                editor.selectionStart = editor.selectionEnd = start + 2;
-            }
-        });
-    </script>
+
+editor.value = sample;
+
+// ── Render & Stats ─────────────────────────────
+function render() {
+  preview.innerHTML = marked.parse(editor.value);
+  updateStats();
+}
+
+function updateStats() {
+  const text = editor.value;
+  const chars = text.length;
+  const words = text.trim() ? text.trim().split(/\s+/).length : 0;
+  const lines = text.split('\n').length;
+  document.getElementById('charCount').textContent = `${chars} chars`;
+  document.getElementById('wordCount').textContent = `${words} words`;
+  document.getElementById('lineCount').textContent = `${lines} line${lines !== 1 ? 's' : ''}`;
+}
+
+editor.addEventListener('input', render);
+
+editor.addEventListener('keydown', function(e) {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = this.selectionStart;
+    const end = this.selectionEnd;
+    this.value = this.value.substring(0, start) + '  ' + this.value.substring(end);
+    this.selectionStart = this.selectionEnd = start + 2;
+    render();
+  }
+});
+
+// ── Toolbar actions ────────────────────────────
+function toggleWrap() {
+  editor.classList.toggle('wrap');
+  editor.classList.toggle('no-wrap');
+}
+
+function clearEditor() {
+  editor.value = '';
+  render();
+}
+
+function copyMarkdown() {
+  navigator.clipboard.writeText(editor.value).then(() => {
+    const btn = event.target.closest('.toolbar-btn');
+    const original = btn.innerHTML;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg> Copied!';
+    btn.style.color = 'var(--green)';
+    setTimeout(() => { btn.innerHTML = original; btn.style.color = ''; }, 1500);
+  });
+}
+
+// ── Resizable divider ──────────────────────────
+const divider = document.getElementById('divider');
+const editorPanel = document.getElementById('editorPanel');
+const previewPanel = document.getElementById('previewPanel');
+let isDragging = false;
+
+divider.addEventListener('mousedown', () => {
+  isDragging = true;
+  document.body.style.cursor = 'col-resize';
+  document.body.style.userSelect = 'none';
+});
+
+document.addEventListener('mousemove', (e) => {
+  if (!isDragging) return;
+  const container = document.querySelector('.panels');
+  const rect = container.getBoundingClientRect();
+  const pct = ((e.clientX - rect.left) / rect.width) * 100;
+  const clamped = Math.min(Math.max(pct, 20), 80);
+  editorPanel.style.flex = `0 0 ${clamped}%`;
+  previewPanel.style.flex = `0 0 ${100 - clamped}%`;
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging = false;
+  document.body.style.cursor = '';
+  document.body.style.userSelect = '';
+});
+
+// ── Synchronized scrolling ─────────────────────
+const previewWrap = document.querySelector('.preview-wrap');
+
+editor.addEventListener('scroll', () => {
+  const pct = editor.scrollTop / (editor.scrollHeight - editor.clientHeight || 1);
+  previewWrap.scrollTop = pct * (previewWrap.scrollHeight - previewWrap.clientHeight);
+});
+
+// Initial render
+render();
+</script>
 </body>
 </html>
